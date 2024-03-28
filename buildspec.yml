@@ -33,13 +33,13 @@ phases:
 
   build:
     commands:
-      - export NODE_OPTIONS=--openssl-legacy-provider
       - echo "Building client"
       - cd client
       - npm install
       - npm run build
+
       - echo "Building server"
-      - cd server
+      - cd ../server # Make sure to go back to the root directory before changing to server if they are at the same level
       - npm install
       - npm run build
 
