@@ -1,0 +1,52 @@
+version: 0.2
+env:
+  parameter-store:
+    SONAR_TOKEN: code-repost-sonarqube
+  variables:
+    NODE_OPTIONS: "--openssl-legacy-provider"
+    BASE_DIRECTORY: "/codebuild/output/src<random-number>/src"
+    
+
+phases:
+  install:
+    commands:
+      - echo "Installing Node.js"
+      - curl -sL https://deb.nodesource.com/setup_16.x | sudo -E bash - # replace with your preferred Node.js version
+      - sudo apt-get install -y nodejs
+      - node --version
+      - npm --version
+      - echo "Installing Trivy"
+      - wget https://github.com/aquasecurity/trivy/releases/download/v0.18.3/trivy_0.18.3_Linux-64bit.tar.gz
+      - tar zxvf trivy_0.18.3_Linux-64bit.tar.gz
+      - sudo mv trivy /usr/local/bin/trivy
+      - trivy --version
+
+  pre_build:
+    commands:
+      - echo "Running Trivy vulnerability scan"
+      - trivy filesystem --exit-code 0 --no-progress ./ || true
+      - echo "Running SonarCloud scan"
+      - npm install -g sonarqube-scanner
+      - pwd
+      - ls -al
+      - sonar-scanner -Dsonar.projectKey=supriyavhanhuve_code-repost -Dsonar.organization=supriyavhanhuve -Dsonar.sources=./ -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN
+
+  build:
+    commands:
+      - export NODE_OPTIONS=--openssl-legacy-provider
+      - echo "Building client"
+      - cd client
+      - npm install
+      - npm run build
+      - echo "Building server"
+      - cd server
+      - npm install
+      - npm run build
+
+  post_build:
+    commands:
+      - echo "Build and analysis complete."
+
+artifacts:
+  files:
+    - '**/*'

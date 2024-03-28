@@ -1,0 +1,26 @@
+version: 0.0
+os: linux
+
+files:
+  - source: /client
+    destination: /home/ubuntu/code-repost/client
+    file_exists_behavior: OVERWRITE
+  - source: /server
+    destination: /home/ubuntu/code-repost/server
+    file_exists_behavior: OVERWRITE
+
+hooks:
+  BeforeInstall:
+    - location: cleanup.sh
+      timeout: 300
+      runas: root
+      
+  AfterInstall:
+    - location: afterinstall.sh
+      timeout: 300
+      runas: root
+
+ApplicationStart:
+    - location: applicationstart.sh
+      timeout: 300
+      runas: root
